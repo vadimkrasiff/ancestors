@@ -1,0 +1,29 @@
+{
+  "name": "dedy",
+  "version": "1.0.0",
+  "description": "Деды — поминальная ночь. Party-игра на 2–20 человек: общий экран + телефоны.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "FAST=1 node --watch src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vadimkrasiff/ancestors.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vadimkrasiff/ancestors/issues"
+  },
+  "homepage": "https://github.com/vadimkrasiff/ancestors#readme",
+  "dependencies": {
+    "express": "^4.22.3",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
+  },
+  "private": true
+}

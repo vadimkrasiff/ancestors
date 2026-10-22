@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Деды — экран избы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=Ruslan+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="host" id="game">
+    <header>
+      <h1>Деды</h1>
+      <span class="muted" id="round"></span>
+      <span class="grow"></span>
+      <span class="track" id="roosters" title="Петухи до рассвета"></span>
+      <span class="track" id="candles" title="Свечи"></span>
+      <span class="timer" id="timer"></span>
+    </header>
+    <main>
+      <section class="panel">
+        <h2>Живые</h2>
+        <ul class="people" id="living"></ul>
+      </section>
+      <section class="table-area">
+        <div class="phase-title" id="phaseTitle"></div>
+        <div class="phase-hint" id="phaseHint"></div>
+        <div class="cards" id="items"></div>
+        <div class="cards rites" id="rites"></div>
+      </section>
+      <section class="panel">
+        <h2>Предки</h2>
+        <div class="ancestors" id="ancestors"></div>
+      </section>
+    </main>
+    <footer>
+      <span class="legend"><b>Тук</b> — да · <b>Тук-тук</b> — нет · предки не говорят вслух</span>
+      <span class="grow"></span>
+      <button id="soundBtn">🔇 Звук</button>
+      <button id="nextBtn">Дальше ⏭</button>
+    </footer>
+  </div>
+
+  <div class="overlay" id="overlay"><div class="box" id="overlayBox"></div></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/common.js"></script>
+  <script src="/sound.js"></script>
+  <script src="/host.js"></script>
+</body>
+</html>
