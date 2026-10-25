@@ -6,7 +6,7 @@
   <title>Деды — экран избы</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=Ruslan+Display&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="host" id="game">
@@ -44,9 +44,13 @@
 
   <div class="overlay" id="overlay"><div class="box" id="overlayBox"></div></div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/common.js"></script>
-  <script src="/sound.js"></script>
-  <script src="/host.js"></script>
+  <script src="vendor/peerjs.min.js"></script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="net.js"></script>
+  <script src="content.js"></script>
+  <script src="game.js"></script>
+  <script src="common.js"></script>
+  <script src="sound.js"></script>
+  <script src="host.js"></script>
 </body>
 </html>

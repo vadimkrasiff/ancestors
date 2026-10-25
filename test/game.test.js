@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { Room, PHASE, NEED_ROOSTERS, MAX_CANDLES } = require('../src/game');
+const { Room, PHASE, NEED_ROOSTERS, MAX_CANDLES } = require('../public/game');
 
 // Очень длинные таймеры: в тестах фазы двигаются только вручную
 const SLOW = { intro: 1e9, omen: 1e9, talk: 1e9, offer: 1e9, reveal: 1e9 };

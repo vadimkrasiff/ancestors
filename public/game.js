@@ -1,4 +1,5 @@
-const { ITEMS, RITES, WORDS } = require('./content');
+(() => {
+const { ITEMS, RITES, WORDS } = typeof module !== 'undefined' ? require('./content') : window.DedyContent;
 
 const PHASE = {
   LOBBY: 'lobby',
@@ -319,4 +320,6 @@ class Room {
   }
 }
 
-module.exports = { Room, PHASE, MAX_PLAYERS, MAX_CANDLES, NEED_ROOSTERS };
+if (typeof module !== 'undefined') module.exports = { Room, PHASE, MAX_PLAYERS, MAX_CANDLES, NEED_ROOSTERS };
+else window.Dedy = { Room, PHASE, MAX_PLAYERS, MAX_CANDLES, NEED_ROOSTERS };
+})();

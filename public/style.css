@@ -298,3 +298,5 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; letter-sp
   .lobby .joined, .lobby .actions { justify-content: center; }
   .rules { grid-template-columns: 1fr; }
 }
+
+a { color: var(--flame); }

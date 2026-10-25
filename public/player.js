@@ -1,8 +1,10 @@
-const socket = io();
 const app = $('#app');
 let state = null;
 let session = store.get('dedy-player'); // { code, playerId, name }
 let joinError = '';
+let pending = null; // куда сейчас стучимся: { code, name, playerId }
+let conn = null;
+let peerReady = false;
 
 // Локальные пометки живого: что вычеркнул и что выбрал на этом часу
 let marks = { round: 0, crossed: new Set(), item: null, rite: null };
@@ -10,41 +12,83 @@ let marks = { round: 0, crossed: new Set(), item: null, rite: null };
 const urlRoom = new URLSearchParams(location.search).get('room');
 if (urlRoom && session && session.code !== urlRoom.toUpperCase()) session = null;
 
-function join(code, name, playerId) {
-  socket.emit('player:join', { code, name, playerId }, (res) => {
-    if (res.error) {
-      // старая сессия протухла — показываем форму заново
-      if (playerId) {
-        store.del('dedy-player');
-        session = null;
-        return render();
-      }
-      joinError = res.error;
-      return render();
-    }
-    session = { code: res.code, playerId: res.playerId, name };
-    store.set('dedy-player', session);
-    joinError = '';
-    render();
-  });
-}
-
-socket.on('connect', () => {
-  if (session) join(session.code, session.name, session.playerId);
+const peer = new Peer(peerOptions());
+peer.on('open', () => {
+  peerReady = true;
+  if (pending) connect();
+  else if (session) join(session.code, session.name, session.playerId);
   else render();
 });
-
-socket.on('state', (s) => {
-  state = s;
-  trackDeadline(s);
-  if (marks.round !== s.round) marks = { round: s.round, crossed: new Set(), item: null, rite: null };
+peer.on('disconnected', () => !peer.destroyed && peer.reconnect());
+peer.on('error', (err) => {
+  if (err.type === 'peer-unavailable') {
+    // Избы больше нет: ведущий закрыл вкладку или код неверный
+    forget();
+    joinError = 'Нет такой избы. Проверь код';
+  } else {
+    joinError = `Связь прервалась (${err.type}). Обнови страницу`;
+  }
+  pending = null;
   render();
 });
 
-// Живые чувствуют стук рукой
-socket.on('fx', (s) => {
-  if (s.type !== 'knock' || !navigator.vibrate) return;
-  navigator.vibrate(s.value === 'yes' ? 120 : [120, 140, 120]);
+function forget() {
+  store.del('dedy-player');
+  session = null;
+  state = null;
+}
+
+function join(code, name, playerId) {
+  pending = { code: String(code).trim().toUpperCase(), name, playerId };
+  if (peerReady) connect();
+}
+
+function connect() {
+  if (conn) conn.close();
+  const c = peer.connect(PEER_PREFIX + pending.code, { reliable: true });
+  conn = c;
+  c.on('open', () => c.send({ t: 'join', name: pending.name, playerId: pending.playerId }));
+  c.on('data', onMessage);
+  c.on('close', () => {
+    // Телефон уснул или сеть моргнула — стучимся снова
+    if (conn === c && session) setTimeout(() => conn === c && join(session.code, session.name, session.playerId), 1500);
+  });
+}
+
+function send(msg) {
+  if (conn && conn.open) conn.send(msg);
+}
+
+function onMessage(msg) {
+  if (msg.t === 'error') {
+    if (pending && pending.playerId) forget();
+    joinError = msg.error;
+    pending = null;
+    return render();
+  }
+  if (msg.t === 'joined') {
+    session = { code: msg.code, playerId: msg.playerId, name: pending.name };
+    store.set('dedy-player', session);
+    joinError = '';
+    pending = null;
+    return render();
+  }
+  if (msg.t === 'state') {
+    state = msg.state;
+    trackDeadline(state);
+    if (marks.round !== state.round) marks = { round: state.round, crossed: new Set(), item: null, rite: null };
+    return render();
+  }
+  // Живые чувствуют стук рукой
+  if (msg.t === 'fx' && msg.fx.type === 'knock' && navigator.vibrate) {
+    navigator.vibrate(msg.fx.value === 'yes' ? 120 : [120, 140, 120]);
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && session && !(conn && conn.open)) {
+    join(session.code, session.name, session.playerId);
+  }
 });
 
 setInterval(() => {
@@ -61,6 +105,10 @@ function topBar() {
 }
 
 function render() {
+  if ((pending || session) && !(state && state.me)) {
+    app.innerHTML = `<h1>Деды</h1><p class="center muted">Стучимся в избу…</p>`;
+    return;
+  }
   if (!session || !state || !state.me) return renderJoin();
   const { me, phase } = state;
 
@@ -102,11 +150,13 @@ function renderJoin() {
       <input name="name" placeholder="Твоё имя" maxlength="16" autocomplete="nickname">
       <div class="err">${esc(joinError)}</div>
       <button class="primary big" type="submit">Войти в избу</button>
-    </form>`;
+    </form>
+    <p class="center muted"><a href="host.html">Открыть экран избы на ТВ →</a></p>`;
   $('#joinForm').onsubmit = (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
     join(String(f.get('code')).trim(), String(f.get('name')).trim());
+    render();
   };
   if (code) $('[name=name]').focus();
 }
@@ -166,10 +216,10 @@ function renderDead() {
         ${me.hand.map((w) => `<button data-word="${esc(w)}" ${me.wordsLeft ? '' : 'disabled'}>${esc(w)}</button>`).join('')}
       </div>`;
     app.querySelectorAll('[data-knock]').forEach((b) => {
-      b.onclick = () => socket.emit('player:knock', b.dataset.knock);
+      b.onclick = () => send({ t: 'knock', kind: b.dataset.knock });
     });
     app.querySelectorAll('[data-word]').forEach((b) => {
-      b.onclick = () => socket.emit('player:word', b.dataset.word);
+      b.onclick = () => send({ t: 'word', word: b.dataset.word });
     });
     return;
   }
@@ -224,7 +274,7 @@ function renderLiving() {
     };
   });
   const vb = $('#voteBtn');
-  if (vb) vb.onclick = () => socket.emit('player:vote', { item: marks.item, rite: marks.rite });
+  if (vb) vb.onclick = () => send({ t: 'vote', item: marks.item, rite: marks.rite });
 }
 
 function renderReveal() {

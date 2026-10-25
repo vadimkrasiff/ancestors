@@ -1,12 +1,11 @@
 {
   "name": "dedy",
   "version": "1.0.0",
-  "description": "Деды — поминальная ночь. Party-игра на 2–20 человек: общий экран + телефоны.",
-  "main": "src/server.js",
+  "description": "Деды — поминальная ночь. Party-игра на 2–20 человек: общий экран + телефоны, без сервера (WebRTC).",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "FAST=1 node --watch src/server.js",
-    "test": "node --test test/*.test.js"
+    "start": "node scripts/dev.js",
+    "test": "node --test test/*.test.js",
+    "vendor": "cp node_modules/peerjs/dist/peerjs.min.js node_modules/qrcode-generator/qrcode.js public/vendor/"
   },
   "repository": {
     "type": "git",
@@ -17,13 +16,10 @@
     "url": "https://github.com/vadimkrasiff/ancestors/issues"
   },
   "homepage": "https://github.com/vadimkrasiff/ancestors#readme",
-  "dependencies": {
-    "express": "^4.22.3",
-    "qrcode": "^1.5.4",
-    "socket.io": "^4.8.4"
-  },
   "devDependencies": {
-    "socket.io-client": "^4.8.4"
+    "peer": "^1.0.2",
+    "peerjs": "^1.5.5",
+    "qrcode-generator": "^1.5.2"
   },
   "private": true
 }

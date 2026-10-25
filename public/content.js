@@ -1,3 +1,4 @@
+(() => {
 // Содержимое поминального стола: что можно поставить, какие обряды исполнить
 // и какие слова предки могут донести из-за гроба.
 
@@ -39,4 +40,7 @@ const WORDS = [
   'праздник', 'пьяно', 'круг', 'рука', 'порог', 'ветер', 'брюхо',
 ];
 
-module.exports = { ITEMS, RITES, WORDS };
+// Работает и в браузере, и в Node (для тестов)
+if (typeof module !== 'undefined') module.exports = { ITEMS, RITES, WORDS };
+else window.DedyContent = { ITEMS, RITES, WORDS };
+})();
